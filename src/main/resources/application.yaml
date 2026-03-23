@@ -1,0 +1,22 @@
+server:
+  port: 8082
+
+management:
+  endpoint:
+    health:
+      show-details: always
+
+# JWT secret must match user-service (same token issuer)
+jwt:
+  secret: ${JWT_SECRET:VGK9Ui1qwyp1b1GwtmhsZ1USBsglV8fu1pwk0bJCUNw=}
+
+spring:
+  application:
+    name: todo-service
+
+  datasource:
+    # stringtype=unspecified lets the server coerce string parameters to enum columns (e.g. task_status)
+    url: jdbc:postgresql://localhost:5432/app_todo_db?stringtype=unspecified
+    username: app_todo_db_user
+    password: secret
+    driver-class-name: org.postgresql.Driver
