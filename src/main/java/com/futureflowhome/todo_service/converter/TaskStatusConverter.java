@@ -17,12 +17,21 @@ public class TaskStatusConverter implements AttributeConverter<TaskStatus, Strin
         if (attribute == null) {
             return null;
         }
-        return switch (attribute) {
-            case TODO -> "todo";
-            case IN_PROGRESS -> "in_progress";
-            case COMPLETED -> "completed";
-            case ARCHIVED -> "archived";
-        };
+        // If/else avoids javac-generated synthetic nested class (e.g. TaskStatusConverter$1) that
+        // Hibernate 7 can fail to load during converter metadata introspection.
+        if (attribute == TaskStatus.TODO) {
+            return "todo";
+        }
+        if (attribute == TaskStatus.IN_PROGRESS) {
+            return "in_progress";
+        }
+        if (attribute == TaskStatus.COMPLETED) {
+            return "completed";
+        }
+        if (attribute == TaskStatus.ARCHIVED) {
+            return "archived";
+        }
+        throw new IllegalStateException("Unhandled TaskStatus: " + attribute);
     }
 
     @Override
@@ -31,14 +40,20 @@ public class TaskStatusConverter implements AttributeConverter<TaskStatus, Strin
             return null;
         }
         String normalized = dbData.trim().toLowerCase();
-        return switch (normalized) {
-            case "todo" -> TaskStatus.TODO;
-            case "in_progress" -> TaskStatus.IN_PROGRESS;
-            case "completed" -> TaskStatus.COMPLETED;
-            case "archived" -> TaskStatus.ARCHIVED;
-            default -> throw new IllegalArgumentException(
-                    "Unknown task_status value: '" + dbData + "'. Expected one of: "
-                            + Arrays.toString(TaskStatus.values()));
-        };
+        if ("todo".equals(normalized)) {
+            return TaskStatus.TODO;
+        }
+        if ("in_progress".equals(normalized)) {
+            return TaskStatus.IN_PROGRESS;
+        }
+        if ("completed".equals(normalized)) {
+            return TaskStatus.COMPLETED;
+        }
+        if ("archived".equals(normalized)) {
+            return TaskStatus.ARCHIVED;
+        }
+        throw new IllegalArgumentException(
+                "Unknown task_status value: '" + dbData + "'. Expected one of: "
+                        + Arrays.toString(TaskStatus.values()));
     }
 }

@@ -5,7 +5,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 
 @Configuration
@@ -18,12 +20,24 @@ public class SecurityConfig {
      * matches if a controller mapping exists for that HTTP method. {@code GET /api/tasks}
      * has no handler (only {@code POST} is mapped), so the rule would not apply and
      * {@code anyRequest().denyAll()} would yield 403 even with a valid JWT.
+     * 
+     * More specific API paths listed before {@code /api/**} can use {@code permitAll()}
+     * (e.g. demo {@code GET /api/security-demo/public}).
      */
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(
+            HttpSecurity http,
+            AuthenticationEntryPoint authenticationEntryPoint,
+            AccessDeniedHandler accessDeniedHandler)
+            throws Exception {
         http
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint(authenticationEntryPoint)
+                        .accessDeniedHandler(accessDeniedHandler))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(PathPatternRequestMatcher.pathPattern("/actuator/**")).permitAll()
+                        .requestMatchers(PathPatternRequestMatcher.pathPattern("/api/security-demo/public"))
+                                .permitAll()
                         .requestMatchers(PathPatternRequestMatcher.pathPattern("/api/**")).authenticated()
                         .anyRequest().denyAll()
                 )

@@ -6,13 +6,17 @@ management:
     health:
       show-details: always
 
-# JWT secret must match user-service (same token issuer)
-jwt:
-  secret: ${JWT_SECRET:VGK9Ui1qwyp1b1GwtmhsZ1USBsglV8fu1pwk0bJCUNw=}
-
+# Validate access tokens from user-service via JWKS (RS256). Start user-service first, or set URLs for your deployment.
 spring:
   application:
     name: todo-service
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${JWT_ISSUER_URI:http://localhost:8081}
+          jwk-set-uri: ${JWT_JWK_SET_URI:http://localhost:8081/.well-known/jwks.json}
 
   datasource:
     # stringtype=unspecified lets the server coerce string parameters to enum columns (e.g. task_status)
